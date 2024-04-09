@@ -440,4 +440,8 @@ inline int sym_address_cb(const char *symname,
   return 0;
 }
 
+#ifdef USE_BLAZESYM
+void symbolize_blazesym(const char *path, struct symbol *sym);
+#endif
+
 } // namespace bpftrace

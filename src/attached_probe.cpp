@@ -414,7 +414,11 @@ bool AttachedProbe::resolve_offset_uprobe(bool safe_mode, bool has_multiple_aps)
 
   if (symbol.empty()) {
     sym.address = probe_.address;
+#ifdef USE_BLAZESYM
+    symbolize_blazesym(probe_.path.c_str(), &sym);
+#else
     bcc_elf_foreach_sym(probe_.path.c_str(), sym_address_cb, &option, &sym);
+#endif
 
     if (!sym.start) {
       if (safe_mode) {

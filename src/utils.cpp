@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <array>
 #include <cerrno>
+#ifdef USE_BLAZESYM
+#include <blazesym.h>
+#endif
 #include <climits>
 #include <cmath>
 #include <cstring>
@@ -110,10 +113,69 @@ const struct vmlinux_location vmlinux_locs[] = {
   { nullptr, false },
 };
 
-static bool resolve_vmlinux_sym(const char* path, struct symbol *sym)
+#ifdef USE_BLAZESYM
+// Symbolize a symbol using `blazesym`.
+//
+// `sym` is expected to have its `address` member set. On success, `sym`
+// will also have the `name` member (and other) populated.
+void symbolize_blazesym(const char *path, struct symbol *sym)
 {
-  bcc_elf_symcb callback = !sym->name.empty() ? sym_name_cb
-                                              : sym_address_cb;
+  assert(sym->address != 0);
+
+  struct blaze_symbolizer *symbolizer = blaze_symbolizer_new();
+  if (!symbolizer) {
+    LOG(ERROR) << "Failed to instantiate symbolizer for " << path;
+    return;
+  }
+
+  struct blaze_symbolize_src_elf src {
+    .type_size = sizeof(src),
+    .path = path,
+    // TODO: Enable debug symbol support eventually.
+    .debug_syms = false,
+    .reserved = 0,
+  };
+  uint64_t addrs[] = {
+    sym->address,
+  };
+  struct blaze_syms const *syms = blaze_symbolize_elf_virt_offsets(
+      symbolizer, &src, addrs, ARRAY_SIZE(addrs));
+  if (!syms) {
+    LOG(ERROR) << "Failed to symbolize address " << std::hex << sym->address << " in " << path;
+    blaze_symbolizer_free(symbolizer);
+    return;
+  }
+
+  struct blaze_sym const *sym_ = &syms->syms[0];
+  if (sym_->name != NULL) {
+    sym->name = strdup(sym_->name);
+    sym->address = sym_->addr;
+    sym->size = sym_->size;
+  }
+  blaze_syms_free(syms);
+  blaze_symbolizer_free(symbolizer);
+}
+
+static bool resolve_vmlinux_sym_blazesym(const char *path, struct symbol *sym)
+{
+  symbolize_blazesym(path, sym);
+  return sym->start != 0;
+}
+#endif
+
+bool resolve_vmlinux_sym(const char *path, struct symbol *sym)
+{
+#ifdef USE_BLAZESYM
+  // Use blazesym for address -> name lookup/check, if enabled.
+  if (sym->name.empty()) {
+    if (resolve_vmlinux_sym_blazesym(path, sym)) {
+      LOG(V1) << "vmlinux: using " << path;
+      return true;
+    }
+  }
+#endif
+
+  bcc_elf_symcb callback = !sym->name.empty() ? sym_name_cb : sym_address_cb;
   struct bcc_symbol_option options = {
     .use_debug_file = 0,
     .check_debug_file_crc = 0,
