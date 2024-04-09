@@ -22,3 +22,13 @@ VENDOR_GTEST shows how to vendor sources from GitHub
 Disclaimers:
 - bcc seems to support perf maps in their `ProcSyms` thingy
   - what the fuck are they?
+
+Build the thing:
+rm -rf build/
+mkdir build/
+cd build/
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_BLAZESYM=1 ../
+make VERBOSE=1 -j
+
+TODO:
+- we need to honor `STATIC_LINKING` flag
