@@ -471,7 +471,12 @@ bool AttachedProbe::resolve_offset_uprobe(bool safe_mode, bool has_multiple_aps)
     symbol = sym.name;
     func_offset = probe_.address - sym.start;
   } else {
-    sym.name = symbol;
+    if (auto result = find_symbol(probe_.path, symbol)) {
+      sym = result.value()
+    } else {
+      throw FatalUserException("Could not resolve symbol: " + probe_.path +
+                               ":" + symbol);
+    }
     bcc_elf_foreach_sym(probe_.path.c_str(), sym_name_cb, &option, &sym);
 
     if (!sym.start) {
