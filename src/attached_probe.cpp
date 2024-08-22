@@ -525,8 +525,9 @@ bool AttachedProbe::resolve_offset_uprobe(bool safe_mode, bool has_multiple_aps)
 }
 
 // find vmlinux file containing the given symbol information
-static std::string find_vmlinux(const struct vmlinux_location *locs,
-                                struct symbol &sym)
+static std::optional<std::string> find_vmlinux(
+    const struct vmlinux_location *locs,
+    struct symbol &sym)
 {
   struct bcc_symbol_option option = {};
   option.use_debug_file = 0;
@@ -549,7 +550,7 @@ static std::string find_vmlinux(const struct vmlinux_location *locs,
     }
   }
 
-  return "";
+  return std::nullopt;
 }
 
 void AttachedProbe::resolve_offset_kprobe(bool safe_mode)
@@ -578,8 +579,8 @@ void AttachedProbe::resolve_offset_kprobe(bool safe_mode)
     locs = locs_env;
   }
 
-  std::string path = find_vmlinux(locs, sym);
-  if (path.empty()) {
+  auto path = find_vmlinux(locs, sym);
+  if (!path.has_value()) {
     LOG(V1) << "Could not resolve symbol " << symbol
             << ". Skipping usermode offset checking.";
     LOG(V1) << "The kernel will verify the safety of the location but "
@@ -592,10 +593,10 @@ void AttachedProbe::resolve_offset_kprobe(bool safe_mode)
     throw FatalUserException("Offset outside the function bounds ('" + symbol +
                              "' size is " + std::to_string(sym.size) + ")");
 
-  uint64_t sym_offset = resolve_offset(path, probe_.attach_point, probe_.loc);
+  uint64_t sym_offset = resolve_offset(*path, probe_.attach_point, probe_.loc);
 
   check_alignment(
-      path, symbol, sym_offset, func_offset, safe_mode, probe_.type);
+      *path, symbol, sym_offset, func_offset, safe_mode, probe_.type);
 }
 
 void AttachedProbe::attach_multi_kprobe()
