@@ -70,11 +70,14 @@ add_executable(${BPFTRACE}
 # TODO: Add support for using "system" blazesym and linking dynamically. Then,
 #       also honor `STATIC_LINKING` properly.
 if (USE_BLAZESYM)
-  if (NOT STATIC_LINKING)
-    # It's not a strict requirement (we could just link *only* blazesym
-    # statically), but for now we enforce program-wide static linking.
-    message(FATAL_ERROR "blazesym usage requires static linking; consider setting STATIC_LINKING")
-  endif()
+  # TODO: Include the next lines for the actual pull request. Can't use
+  #       them because fucking gmock shit is required otherwise, and it
+  #       can't be found.
+  #if (NOT STATIC_LINKING)
+  #  # It's not a strict requirement (we could just link *only* blazesym
+  #  # statically), but for now we enforce program-wide static linking.
+  #  message(FATAL_ERROR "blazesym usage requires static linking; consider setting STATIC_LINKING")
+  #endif()
 
   include(FetchContent)
   set(FETCHCONTENT_QUIET TRUE)
@@ -88,8 +91,10 @@ if (USE_BLAZESYM)
 
   FetchContent_Declare(
     blazesym
-    GIT_REPOSITORY https://github.com/libbpf/blazesym.git
-    GIT_TAG capi-v0.1.0-rc.2
+    GIT_REPOSITORY https://github.com/d-e-s-o/blazesym.git
+    # TODO: Consume published release containing https://github.com/libbpf/blazesym/pull/961
+    GIT_TAG 765b16a4fbdc16f0475916065bb153b7a1e48be2
+    #GIT_TAG capi-v0.1.0-rc.2
   )
   FetchContent_MakeAvailable(blazesym)
 
