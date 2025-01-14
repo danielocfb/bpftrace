@@ -22,7 +22,7 @@ public:
   constexpr cstring_view(const char *str) noexcept : std::string_view{ str }
   {
   }
-  constexpr cstring_view(const std::string &str) noexcept
+  cstring_view(const std::string &str) noexcept
       : std::string_view{ str }
   {
   }
