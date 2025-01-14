@@ -110,6 +110,28 @@ const struct vmlinux_location vmlinux_locs[] = {
   { nullptr, false },
 };
 
+static bool resolve_vmlinux_sym(const char* path, struct symbol *sym)
+{
+  bcc_elf_symcb callback = !sym->name.empty() ? sym_name_cb
+                                              : sym_address_cb;
+  struct bcc_symbol_option options = {
+    .use_debug_file = 0,
+    .check_debug_file_crc = 0,
+    .lazy_symbolize = 0,
+    .use_symbol_type = BCC_SYM_ALL_TYPES ^ (1 << STT_NOTYPE),
+  };
+  if (bcc_elf_foreach_sym(path, callback, &options, sym) == -1) {
+    LOG(ERROR) << "Failed to iterate over symbols in " << path;
+    return false;
+  }
+
+  if (sym->start) {
+    LOG(V1) << "vmlinux: using " << path;
+    return true;
+  }
+  return false;
+}
+
 std::optional<std::string> find_vmlinux(struct vmlinux_location const *locs,
                                         struct symbol *sym)
 {
@@ -141,24 +163,8 @@ std::optional<std::string> find_vmlinux(struct vmlinux_location const *locs,
 
     if (sym == nullptr) {
       return path;
-    } else {
-      bcc_elf_symcb callback = !sym->name.empty() ? sym_name_cb
-                                                  : sym_address_cb;
-      struct bcc_symbol_option options = {
-        .use_debug_file = 0,
-        .check_debug_file_crc = 0,
-        .lazy_symbolize = 0,
-        .use_symbol_type = BCC_SYM_ALL_TYPES ^ (1 << STT_NOTYPE),
-      };
-      if (bcc_elf_foreach_sym(path, callback, &options, sym) == -1) {
-        LOG(ERROR) << "Failed to iterate over symbols in " << path;
-        continue;
-      }
-
-      if (sym->start) {
-        LOG(V1) << "vmlinux: using " << path;
-        return path;
-      }
+    } else if (resolve_vmlinux_sym(path, sym)) {
+      return path;
     }
   }
 
