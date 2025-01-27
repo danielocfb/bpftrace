@@ -203,7 +203,7 @@ bool ConfigAnalyser::analyse()
 Pass CreateConfigPass()
 {
   auto fn = [](PassContext &ctx) {
-    auto configs = ConfigAnalyser(ctx.ast_ctx, ctx.b.config_);
+    auto configs = ConfigAnalyser(ctx.ast_ctx, ctx.c);
     if (!configs.analyse())
       return PassResult::Error("Config");
     return PassResult::Success();

@@ -9,6 +9,7 @@
 namespace bpftrace {
 
 class BPFtrace;
+class Config;
 
 namespace ast {
 
@@ -89,7 +90,9 @@ private:
 
 struct PassContext {
 public:
-  PassContext(BPFtrace &b, ASTContext &ast_ctx) : b(b), ast_ctx(ast_ctx){};
+  PassContext(bpftrace::Config &config, BPFtrace &b, ASTContext &ast_ctx)
+      : c(config), b(b), ast_ctx(ast_ctx) {};
+  bpftrace::Config &c;
   BPFtrace &b;
   ASTContext &ast_ctx;
 };
@@ -102,7 +105,7 @@ using PassFPtr = std::function<PassResult(PassContext &)>;
 class Pass {
 public:
   Pass() = delete;
-  Pass(std::string name, PassFPtr fn) : fn_(fn), name(name){};
+  Pass(std::string name, PassFPtr fn) : fn_(fn), name(name) {};
 
   virtual ~Pass() = default;
 

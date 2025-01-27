@@ -231,9 +231,14 @@ public:
   int ncpus_;
   int online_cpus_;
   int max_cpu_id_;
-  Config config_;
+
+  const Config& config() const {
+    return config_;
+  }
 
 private:
+  Config config_;
+
   void *ksyms_{ nullptr };
   // note: exe_sym_ is used when layout is same for all instances of program
   std::map<std::string, std::pair<int, void *>> exe_sym_; // exe -> (pid, cache)

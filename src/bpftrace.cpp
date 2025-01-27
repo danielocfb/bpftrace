@@ -483,7 +483,7 @@ void perf_event_printer(void *cb_cookie, void *data, int size)
 
     std::stringstream buf;
     cat_file(fmt.format_str(arg_values).c_str(),
-             bpftrace->config_.get(ConfigKeyInt::max_cat_bytes),
+             bpftrace->config().get(ConfigKeyInt::max_cat_bytes),
              buf);
     bpftrace->out_->message(MessageType::cat, buf.str(), false);
 

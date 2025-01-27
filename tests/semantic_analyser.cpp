@@ -280,7 +280,7 @@ kprobe:f { fake }
 TEST(semantic_analyser, builtin_variables_inline)
 {
   auto bpftrace = get_mock_bpftrace();
-  ConfigSetter configs{ bpftrace->config_, ConfigSource::script };
+  ConfigSetter configs{ bpftrace->config(), ConfigSource::script };
   configs.set(ConfigKeyBool::probe_inline, true);
 
   // Check argument builtins are rejected when `probe_inline` is enabled.
@@ -4398,7 +4398,7 @@ TEST_F(semantic_analyser_btf, binop_late_ptr_resolution)
 TEST(semantic_analyser, buf_strlen_too_large)
 {
   auto bpftrace = get_mock_bpftrace();
-  ConfigSetter configs{ bpftrace->config_, ConfigSource::script };
+  ConfigSetter configs{ bpftrace->config(), ConfigSource::script };
   configs.set(ConfigKeyInt::max_strlen, 9999999999);
 
   test_error(*bpftrace, "uprobe:/bin/sh:f { buf(arg0, 4) }", R"(

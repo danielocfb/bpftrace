@@ -251,9 +251,9 @@ static std::optional<struct timespec> get_delta_taitime()
   return get_delta_with_boottime(CLOCK_TAI);
 }
 
-static void parse_env(BPFtrace& bpftrace)
+static void parse_env(Config& config, BPFtrace& bpftrace)
 {
-  ConfigSetter config_setter(bpftrace.config_, ConfigSource::env_var);
+  ConfigSetter config_setter(config, ConfigSource::env_var);
   get_uint64_env_var("BPFTRACE_MAX_STRLEN", [&](uint64_t x) {
     config_setter.set(ConfigKeyInt::max_strlen, x);
   });
@@ -757,7 +757,7 @@ int main(int argc, char* argv[])
   Config config = Config(!args.cmd_str.empty());
   BPFtrace bpftrace(std::move(output), args.no_feature, config);
 
-  parse_env(bpftrace);
+  parse_env(config, bpftrace);
 
   bpftrace.usdt_file_activation_ = args.usdt_file_activation;
   bpftrace.safe_mode_ = args.safe_mode;
@@ -890,7 +890,7 @@ int main(int argc, char* argv[])
     return 0;
   }
 
-  ast::PassContext ctx(bpftrace, *ast_ctx);
+  ast::PassContext ctx(config, bpftrace, *ast_ctx);
   ast::PassManager pm;
   switch (args.build_mode) {
     case BuildMode::DYNAMIC:
