@@ -163,7 +163,7 @@ public:
 
   static std::optional<StackMode> get_stack_mode(const std::string &s);
   std::optional<ConfigKey> get_config_key(const std::string &str,
-                                          std::string &err);
+                                          std::string &err) const;
 
   friend class ConfigSetter;
 

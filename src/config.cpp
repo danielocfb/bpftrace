@@ -96,7 +96,7 @@ std::optional<StackMode> Config::get_stack_mode(const std::string &s)
 }
 
 std::optional<ConfigKey> Config::get_config_key(const std::string &str,
-                                                std::string &err)
+                                                std::string &err) const
 {
   std::string maybe_key = str;
   static const std::string prefix = "bpftrace_";
