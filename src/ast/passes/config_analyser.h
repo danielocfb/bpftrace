@@ -7,7 +7,6 @@
 #include "ast/pass_manager.h"
 #include "ast/visitors.h"
 #include "bpffeature.h"
-#include "bpftrace.h"
 #include "config.h"
 #include "types.h"
 
@@ -17,11 +16,10 @@ namespace ast {
 class ConfigAnalyser : public Visitor {
 public:
   explicit ConfigAnalyser(ASTContext &ctx,
-                          BPFtrace &bpftrace,
+                          bpftrace::Config &config,
                           std::ostream &out = std::cerr)
       : Visitor(ctx),
-        bpftrace_(bpftrace),
-        config_setter_(ConfigSetter(bpftrace.config_, ConfigSource::script)),
+        config_setter_(ConfigSetter(config, ConfigSource::script)),
         out_(out)
   {
   }
@@ -34,7 +32,6 @@ public:
   bool analyse();
 
 private:
-  BPFtrace &bpftrace_;
   ConfigSetter config_setter_;
   std::ostream &out_;
   std::ostringstream err_;

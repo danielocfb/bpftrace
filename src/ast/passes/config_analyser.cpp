@@ -4,6 +4,7 @@
 #include <string>
 
 #include "ast/ast.h"
+#include "bpftrace.h"
 #include "config.h"
 #include "log.h"
 #include "types.h"
@@ -152,8 +153,8 @@ void ConfigAnalyser::visit(AssignConfigVarStatement &assignment)
   std::string &raw_ident = assignment.config_var;
 
   std::string err_msg;
-  const auto maybeConfigKey = bpftrace_.config_.get_config_key(raw_ident,
-                                                               err_msg);
+  const auto maybeConfigKey = config_setter_.config_.get_config_key(raw_ident,
+                                                                    err_msg);
 
   if (!maybeConfigKey.has_value()) {
     LOG(ERROR, assignment.loc, err_) << err_msg;
@@ -202,7 +203,7 @@ bool ConfigAnalyser::analyse()
 Pass CreateConfigPass()
 {
   auto fn = [](PassContext &ctx) {
-    auto configs = ConfigAnalyser(ctx.ast_ctx, ctx.b);
+    auto configs = ConfigAnalyser(ctx.ast_ctx, ctx.b.config_);
     if (!configs.analyse())
       return PassResult::Error("Config");
     return PassResult::Success();
