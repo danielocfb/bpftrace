@@ -3791,6 +3791,12 @@ Available options:
 If the DebugInfo was rewritten by a post-linkage optimisation tool (like BOLT or AutoFDO), it might yield an incorrect address for a probe location.
 This config can force using the Symbol Table, for when the DebugInfo returns invalid addresses.
 
+=== use_blazesym
+
+Default: `0` if built without blazesym support, `1` otherwise
+
+Choose whether bpftrace will use blazesym for symbolication.
+
 == Environment Variables
 
 These are not available as part of the standard set of <<Config Variables>> and can only be set as environment variables.

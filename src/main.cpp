@@ -140,6 +140,7 @@ void usage(std::ostream& out)
   out << "    BPFTRACE_STACK_MODE               [default: bpftrace] Output format for ustack and kstack builtins" << std::endl;
   out << "    BPFTRACE_STR_TRUNC_TRAILER        [default: '..'] string truncation trailer" << std::endl;
   out << "    BPFTRACE_VMLINUX                  [default: none] vmlinux path used for kernel symbol resolution" << std::endl;
+  out << "    BPFTRACE_USE_BLAZESYM             [default: 0] use blazesym for symbolication; requires being built with support for it" << std::endl;
   out << std::endl;
   out << "EXAMPLES:" << std::endl;
   out << "bpftrace -l '*sleep*'" << std::endl;
@@ -336,6 +337,17 @@ static void parse_env(BPFtrace& bpftrace)
     LOG(WARNING) << "BPFTRACE_MAP_KEYS_MAX is deprecated. Use "
                     "BPFTRACE_MAX_MAP_KEYS instead.";
     config_setter.set(ConfigKeyInt::max_map_keys, x);
+  });
+
+  get_bool_env_var("BPFTRACE_USE_BLAZESYM", [&](bool x) {
+#ifndef USE_BLAZESYM
+    if (x) {
+      LOG(ERROR) << "BPFTRACE_USE_BLAZESYM requires blazesym support enabled "
+                    "during build.";
+      exit(1);
+    }
+#endif
+    config_setter.set(ConfigKeyBool::use_blazesym, x);
   });
 }
 
