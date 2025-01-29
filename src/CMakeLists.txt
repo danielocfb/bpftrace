@@ -72,11 +72,14 @@ add_executable(${BPFTRACE}
 # TODO: Add support for using "system" blazesym and linking dynamically. Then,
 #       also honor `STATIC_LINKING` properly.
 if (USE_BLAZESYM)
-  if (NOT STATIC_LINKING)
-    # It's not a strict requirement (we could just link *only* blazesym
-    # statically), but for now we enforce program-wide static linking.
-    message(FATAL_ERROR "blazesym usage requires static linking; consider setting STATIC_LINKING")
-  endif()
+  # TODO: Include the next lines for the actual pull request. Can't use
+  #       them because fucking gmock shit is required otherwise, and it
+  #       can't be found.
+  #if (NOT STATIC_LINKING)
+  #  # It's not a strict requirement (we could just link *only* blazesym
+  #  # statically), but for now we enforce program-wide static linking.
+  #  message(FATAL_ERROR "blazesym usage requires static linking; consider setting STATIC_LINKING")
+  #endif()
 
   include(FetchContent)
   set(FETCHCONTENT_QUIET TRUE)
